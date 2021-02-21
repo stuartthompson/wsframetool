@@ -1,5 +1,5 @@
 use std::str;
-use super::bitformat::format_raw_bytes;
+use libwdi::format_qword_table;
 
 const BITS_IN_BYTE: u8 = 8;
 const BYTES_IN_DWORD: u8 = 4;
@@ -11,22 +11,17 @@ pub fn decode_frame(content: String) {
     // Parse the websocket frame
     let frame: WebSocketFrame = WebSocketFrame::from(&bytes);
 
-    let length_padding = "$$$";
-
     println!(
         "
 1-------10--------20--------30--------40--------50--------60--------70--------80
-################################################################################
-## Packet Length: {0: >4} {1}
-################################################################################
+Packet length: {0}
+
+{1}
 
 {2}
-
-{3}
     ",
         frame.frame_len,
-        length_padding,
-        format_raw_bytes(&bytes),
+        format_qword_table(&bytes),
         format_short_frame(&frame)
     );
 

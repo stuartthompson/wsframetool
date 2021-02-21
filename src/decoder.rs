@@ -31,7 +31,7 @@ pub fn decode_frame(content: String) {
     // }
 }
 
-struct WebSocketFrame {
+struct WebSocketFrame<'a> {
     frame_len: u8,
     fin_bit: bool,
     rsv1: bool,
@@ -41,11 +41,37 @@ struct WebSocketFrame {
     mask_bit: bool,
     payload_len: u8,
     masking_key: [u8; 4],
+    masked_payload: &'a [u8],
+    unmasked_payload: Vec<u8>,
+    payload: Vec<char>,
 }
 
-impl WebSocketFrame {
+impl<'a> WebSocketFrame<'a> {    
     /// Builds a websocket frame from a byte array
     pub fn from(data: &Vec<u8>) -> WebSocketFrame {
+        const NUM_MASK_BYTES: usize = 4;
+
+        // Get frame length
+        let frame_length: usize = data.len();
+
+        // TODO: Handle larger payloads and unmasked payloads
+        let payload_start_index = 6;
+
+        let num_payload_bytes: usize = frame_length - payload_start_index;
+
+        // Get mask
+        let masking_key: [u8; 4] = [data[2], data[3], data[4], data[5]];
+
+        // Unmask and parse payload data
+        let mut unmasked_payload: Vec<u8> = Vec::new();
+        let mut payload: Vec<char> = Vec::new();
+        for i in 0..num_payload_bytes {
+            let byte: u8 = data[payload_start_index+i] ^ masking_key[i % NUM_MASK_BYTES];
+            unmasked_payload.push(byte); // 32 mask bits are used repeatedly
+            //payload.push(byte as char);
+            payload.push(byte as char);
+        }
+
         WebSocketFrame {
             // Bytes in frame
             frame_len: data.len() as u8,
@@ -64,7 +90,12 @@ impl WebSocketFrame {
             // Bits 9 - 15 contain payload length
             payload_len: byte(data[1], 0b01111111),
             // Next 4 bytes contain masking key
-            masking_key: [data[2], data[3], data[4], data[5]],
+            masking_key,
+            // Masked payload is from byte 6 to end of frame
+            masked_payload: &data[(data.len() - 6)..data.len()],
+            // Unmasked payload
+            unmasked_payload,
+            payload,
         }
     }
 }
@@ -191,15 +222,17 @@ fn format_short_frame(frame: &WebSocketFrame) -> String {
                |0              |    1          |        2      |            3  |
                |0 1 2 3 4 5 6 7|8 9 0 1 2 3 4 5|6 7 8 9 0 1 2 3|4 5 6 7 8 9 0 1|
        +-------+-+-+-+-+-------+-+-------------+-------------------------------+
-       | DWORD |{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7} {8}|
-       |   1   |F|R|R|R| opcode|M| Payload len |     Masking-key (part 1)      |
-       |       |I|S|S|S|  (4)  |A|     (7)     |              (16)             |
-       |       |N|V|V|V|       |S|             |                               |
+       | DWORD |{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|
+       |   1   |F|R|R|R|       |M|             |                               |
+       |       |I|S|S|S|op code|A| Payload len |     Masking-key (part 1)      |
+       |       |N|V|V|V|  (4)  |S|     (7)     |              (16)             |
        |       | |1|2|3|       |K|             |                               |
        +-------+-+-+-+-+-------+-+-------------+-------------------------------+
-       | DWORD |{9} {10}|                               |
-       |   2   |     Masking-key (part 2)      |          Payload Data         |
-       |       |              (16)             |                               |
+       | DWORD |{9}|{10}|{11}|{12}|
+       |   2   |                               |             MASKED
+       |       |     Masking-key (part 2)      |{13}|{14}|
+       |       |              (16)             |     '{15}'    UNMASKED   '{16}'     |
+       |       |                               |          Payload Data         |       
        +-------+-------------------------------+-------------------------------+
        | DWORD |                                                               |
        |   3   |                     Payload Data continued ...                |
@@ -209,17 +242,29 @@ fn format_short_frame(frame: &WebSocketFrame) -> String {
         bit_str(frame.rsv1),
         bit_str(frame.rsv2),
         bit_str(frame.rsv3),
-        byte_part_str(frame.opcode, 4),
+        byte_str(frame.opcode, 4),
         bit_str(frame.mask_bit),
-        byte_part_str(frame.payload_len, 7),
-        byte_part_str(frame.masking_key[0], 8),
-        byte_part_str(frame.masking_key[1], 8),
-        byte_part_str(frame.masking_key[2], 8),
-        byte_part_str(frame.masking_key[3], 8)
+        byte_str(frame.payload_len, 7),
+        byte_str(frame.masking_key[0], 8),
+        byte_str(frame.masking_key[1], 8),
+        byte_str(frame.masking_key[2], 8),
+        byte_str(frame.masking_key[3], 8),
+        byte_str(frame.masked_payload[0], 8),
+        byte_str(frame.masked_payload[1], 8),
+        byte_str(frame.unmasked_payload[0], 8),
+        byte_str(frame.unmasked_payload[1], 8),
+        frame.payload[0],
+        frame.payload[1],
     )
 }
 
-fn byte_part_str<'a>(byte: u8, num_bits: u8) -> String {
+/// Formats a byte or partial byte.
+/// 
+/// # Arguments
+/// 
+/// * `byte` - The byte to format.
+/// * `num_bits` - The number of bits to format.
+fn byte_str<'a>(byte: u8, num_bits: u8) -> String {
     let mut result: String = String::from("");
     for i in 8 - num_bits..8 {
         result.push_str(&format!("{} ", bit_str(get_bit(byte, i))));

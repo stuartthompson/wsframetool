@@ -95,7 +95,7 @@ impl<'a> WebSocketFrame<'a> {
             // Next 4 bytes contain masking key
             masking_key,
             // Masked payload is from byte 6 to end of frame
-            masked_payload: &data[(data.len() - 6)..data.len()],
+            masked_payload: &data[6..data.len()],
             // Unmasked payload
             unmasked_payload,
             payload,
@@ -115,7 +115,6 @@ fn format_raw_bytes(data: &Vec<u8>) -> String {
 +------+--------+--------+--------+--------+--------+--------+--------+--------+",
     );
     let mut qword_buf: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
-    //println!("Data len: {0}   % 8: {1}  41 % 8: {2}  (41).rem_euclid(8): {3} (41).div_euclid(8): {4}", data.len(), data.len() % 8, 41 % 8, (41 as u8).rem_euclid(8), (41 as u8).div_euclid(8));
     
     let num_qwords = data.len().div_euclid(BITS_IN_BYTE as usize);
     // Append full qwords

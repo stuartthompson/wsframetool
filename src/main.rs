@@ -48,7 +48,7 @@ fn print_title_banner() {
     banner.width = 0;
 
     // Add headers
-    banner.add_header("WFI - WebSocket Frame Inspector", HeaderLevel::H1);
+    banner.add_header("WDI - WebSocket Data Inspector", HeaderLevel::H1);
     banner.add_text("Visualize WebSocket data frames.");
 
     // Print banner

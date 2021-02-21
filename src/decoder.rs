@@ -147,72 +147,64 @@ fn format_partial_qword(data: &[u8], qword_ix: usize, num_bytes: usize) -> Strin
         1 => {
             format!(
                 "
-|QWORD |{0:0>8b}|                                                              |
-|  {1}   |   ({0:>3})|{2}|
-+------+--------+--------+--------+--------+--------+--------+--------+--------+",
-                data[0], qword_ix, 
-                (0..((8 - num_bytes)*9)-1).map(|_| ' ').collect::<String>()
+|QWORD |{0:0>8b}|
+|  {1}   |   ({0:>3})|
++------+--------+",
+                data[0], qword_ix
             )
         }
         2 => {
             format!(
                 "
-|QWORD |{0:0>8b}|{1:0>8b}|                                                     |
-|  {2}   |   ({0:>3})|   ({1:>3})|{3}|
-+------+--------+--------+--------+--------+--------+--------+--------+--------+",
-                data[0], data[1], qword_ix,
-                (0..((8 - num_bytes)*9)-1).map(|_| ' ').collect::<String>()
+|QWORD |{0:0>8b}|{1:0>8b}|
+|  {2}   |   ({0:>3})|   ({1:>3})|
++------+--------+--------+",
+                data[0], data[1], qword_ix
             )
         }
         3 => {
             format!(
                 "
-|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|                                            |
-|  {3}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|{4}|
-+------+--------+--------+--------+--------+--------+--------+--------+--------+",
-                data[0], data[1], data[2], qword_ix,
-                (0..((8 - num_bytes)*9)-1).map(|_| ' ').collect::<String>()
-
+|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|
+|  {3}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|
++------+--------+--------+--------+",
+                data[0], data[1], data[2], qword_ix
             )
         }
         4 => {
             format!(
                 "
-|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|{3:0>8b}|                                   |
-|  {4}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|   ({3:>3})|{5}|
-+------+--------+--------+--------+--------+--------+--------+--------+--------+",
-                data[0], data[1], data[2], data[3], qword_ix,
-                (0..((8 - num_bytes)*9)-1).map(|_| ' ').collect::<String>()
+|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|{3:0>8b}|
+|  {4}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|   ({3:>3})|
++------+--------+--------+--------+--------+",
+                data[0], data[1], data[2], data[3], qword_ix
             )
         }
         5 => {
             format!(
                 "
-|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|{3:0>8b}|{4:0>8b}|                          |
-|  {5}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|   ({3:>3})|   ({4:>3})|{6}|
-+------+--------+--------+--------+--------+--------+--------+--------+--------+",
-                data[0], data[1], data[2], data[3], data[4], qword_ix,
-                (0..((8 - num_bytes)*9)-1).map(|_| ' ').collect::<String>()
+|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|{3:0>8b}|{4:0>8b}|
+|  {5}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|   ({3:>3})|   ({4:>3})|
++------+--------+--------+--------+--------+--------+",
+                data[0], data[1], data[2], data[3], data[4], qword_ix
             )
         }
         6 => {
             format!(
                 "
-|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|{3:0>8b}|{4:0>8b}|{5:0>8b}|                 |
-|  {6}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|   ({3:>3})|   ({4:>3})|   ({5:>3})|{7}|
-+------+--------+--------+--------+--------+--------+--------+--------+--------+",
-                data[0], data[1], data[2], data[3], data[4], data[5], qword_ix,
-                (0..((8 - num_bytes)*9)-1).map(|_| ' ').collect::<String>()
+|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|{3:0>8b}|{4:0>8b}|{5:0>8b}|
+|  {6}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|   ({3:>3})|   ({4:>3})|   ({5:>3})|
++------+--------+--------+--------+--------+--------+--------+",
+                data[0], data[1], data[2], data[3], data[4], data[5], qword_ix
             )
         }
         7 => {
             format!(
                 "
-|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|{3:0>8b}|{4:0>8b}|{5:0>8b}|{6:0>8b}|        |
-|  {7}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|   ({3:>3})|   ({4:>3})|   ({5:>3})|   ({6:>3})|{8}|
-+------+--------+--------+--------+--------+--------+--------+--------+--------+",
-                data[0], data[1], data[2], data[3], data[4], data[5], data[6], qword_ix,
-                (0..((8 - num_bytes)*9)-1).map(|_| ' ').collect::<String>()
+|QWORD |{0:0>8b}|{1:0>8b}|{2:0>8b}|{3:0>8b}|{4:0>8b}|{5:0>8b}|{6:0>8b}|
+|  {7}   |   ({0:>3})|   ({1:>3})|   ({2:>3})|   ({3:>3})|   ({4:>3})|   ({5:>3})|   ({6:>3})|
++------+--------+--------+--------+--------+--------+--------+--------+",
+                data[0], data[1], data[2], data[3], data[4], data[5], data[6], qword_ix
             )
         }
         _ => { String::from("") }
@@ -231,13 +223,13 @@ fn format_short_frame(frame: &WebSocketFrame) -> String {
        | DWORD |{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|
        |   1   |F|R|R|R|       |M|             |                               |
        |       |I|S|S|S|op code|A| Payload len |     Masking-key (part 1)      |
-       |       |N|V|V|V|  (4)  |S|     (7)     |              (16)             |
+       |       |N|V|V|V| (4 b) |S|  (7 bits)   |           (16 bits)           |
        |       | |1|2|3|       |K|             |                               |
        +-------+-+-+-+-+-------+-+-------------+-------------------------------+
        | DWORD |{9}|{10}|{11}|{12}|
-       |   2   |                               |             MASKED            |
-       |       |     Masking-key (part 2)      |{13}|{14}|
-       |       |              (16)             |     '{15}'    UNMASKED   '{16}'     |
+       |   2   |                               | {13:>5}      MASKED  {14:>5}      |
+       |       |     Masking-key (part 2)      |{15}|{16}|
+       |       |           (16 bits)           | {17:>5} '{18}' UNMASKED {19:>5} '{20}'  |
        |       |                               |     Payload Data (part 1)     |       
        +-------+-------------------------------+-------------------------------+",
         bit_str(frame.fin_bit),
@@ -253,9 +245,13 @@ fn format_short_frame(frame: &WebSocketFrame) -> String {
         byte_str(frame.masking_key[3], 8),
         byte_str(frame.masked_payload[0], 8),
         byte_str(frame.masked_payload[1], 8),
+        format!("({})", frame.masked_payload[0]),
+        format!("({})", frame.masked_payload[1]),
         byte_str(frame.unmasked_payload[0], 8),
         byte_str(frame.unmasked_payload[1], 8),
+        format!("({})", frame.unmasked_payload[0]),
         frame.payload[0],
+        format!("({})", frame.unmasked_payload[1]),
         frame.payload[1],
     );
 
@@ -306,15 +302,17 @@ fn format_payload_data_dword(
         1 => {
             format!(
                 "
-       | DWORD |{1}|               |               |               |
-       |   {0}   |             MASKED            |                               |
-       |       |{2}|               |               |               |
-       |       |     '{3}'    UNMASKED           |                               |
-       |       |     Payload Data (part {4})     |                               |
-       +-------+-------------------------------+-------------------------------+",
+       | DWORD |{1}|
+       |  {0:<2}   | {2:>5}     MSK |
+       |       |{3}|
+       |       | {4:>5} '{5}' UNM |
+       |       |Payload pt {6:<4}|
+       +-------+---------------+",
                 dword_number,         
-                byte_str(masked_bits[0], BITS_IN_BYTE),  
+                byte_str(masked_bits[0], BITS_IN_BYTE),
+                format!("({})", masked_bits[0]),
                 byte_str(unmasked_bits[0], BITS_IN_BYTE), 
+                format!("({})", unmasked_bits[0]),
                 data[0], 
                 from_part_number,
             )
@@ -322,12 +320,12 @@ fn format_payload_data_dword(
         2 => {
             format!(
                 "
-       | DWORD |{1}|{2}|                               |
-       |   {0}   |             MASKED            |                               |
-       |       |{3}|{4}|                               |
-       |       |     '{5}'    UNMASKED   '{6}'     |                               |
-       |       |     Payload Data (part {7})     |                               |
-       +-------+-------------------------------+-------------------------------+",
+       | DWORD |{1}|{2}|
+       |  {0:<2}   |             MASKED            |
+       |       |{3}|{4}|
+       |       |     '{5}'    UNMASKED   '{6}'     |
+       |       |    Payload Data (part {7:<3})     |
+       +-------+-------------------------------+",
                 dword_number,         
                 byte_str(masked_bits[0], BITS_IN_BYTE), 
                 byte_str(masked_bits[1], BITS_IN_BYTE), 
@@ -341,10 +339,10 @@ fn format_payload_data_dword(
             format!(
                 "
        | DWORD |{1}|{2}|{3}|                
-       |   {0}   |             MASKED            |             MASKED            |
+       |  {0:<2}   |             MASKED            |             MASKED            |
        |       |{4}|{5}|{6}|                
        |       |     '{7}'    UNMASKED   '{8}'     |     '{9}'    UNMASKED           |
-       |       |     Payload Data (part {10})     |     Payload Data (part {11})     |
+       |       |    Payload Data (part {10:<3})    |    Payload Data (part {11:<3})    |
        +-------+-------------------------------+-------------------------------+",
                 dword_number,         
                 byte_str(masked_bits[0], BITS_IN_BYTE), 
@@ -361,10 +359,10 @@ fn format_payload_data_dword(
             format!(
                 "
        | DWORD |{1}|{2}|{3}|{4}|
-       |   {0}   |             MASKED            |             MASKED            |
+       |  {0:<2}   |             MASKED            |             MASKED            |
        |       |{5}|{6}|{7}|{8}|
        |       |     '{9}'    UNMASKED   '{10}'     |     '{11}'    UNMASKED   '{12}'     |
-       |       |     Payload Data (part {13})     |     Payload Data (part {14})     |
+       |       |    Payload Data (part {13:<3})    |    Payload Data (part {14:<3})    |
        +-------+-------------------------------+-------------------------------+",
                 dword_number,         
                 byte_str(masked_bits[0], BITS_IN_BYTE), 

@@ -243,13 +243,13 @@ fn format_payload_dword_row(
         )),
         4 => result.push_str(&format!(
             " {0:>5} '{1}' UNMASKED {2:>5} '{3}'  | {4:>5} '{5}' UNMASKED {6:>5} '{7}'  |",
-            format!("({})", masked_bits[0]),
+            format!("({})", unmasked_bits[0]),
             data[0],
-            format!("({})", masked_bits[1]),
+            format!("({})", unmasked_bits[1]),
             data[1],
-            format!("({})", masked_bits[2]),
+            format!("({})", unmasked_bits[2]),
             data[2],
-            format!("({})", masked_bits[3]),
+            format!("({})", unmasked_bits[3]),
             data[3],
         )),
         _ => {}
@@ -296,9 +296,11 @@ fn format_payload_dword_row(
 /// * `num_bits` - The number of bits to format.
 fn byte_str<'a>(byte: u8, num_bits: u8) -> String {
     let mut result: String = String::from("");
-    for i in 8 - num_bits..8 {
-        result.push_str(&format!("{} ", bit_str(get_bit(byte, i))));
-    }
+    result.push_str(
+        &(8 - num_bits..8)
+            .map(|i| format!("{} ", bit_str(get_bit(byte, i))))
+            .collect::<String>()
+        );
     result.trim().to_string()
 }
 

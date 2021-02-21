@@ -49,7 +49,7 @@ struct WebSocketFrame<'a> {
     payload: Vec<char>,
 }
 
-impl<'a> WebSocketFrame<'a> {    
+impl<'a> WebSocketFrame<'a> {
     /// Builds a websocket frame from a byte array
     pub fn from(data: &Vec<u8>) -> WebSocketFrame {
         const NUM_MASK_BYTES: usize = 4;
@@ -69,9 +69,9 @@ impl<'a> WebSocketFrame<'a> {
         let mut unmasked_payload: Vec<u8> = Vec::new();
         let mut payload: Vec<char> = Vec::new();
         for i in 0..num_payload_bytes {
-            let byte: u8 = data[payload_start_index+i] ^ masking_key[i % NUM_MASK_BYTES];
+            let byte: u8 = data[payload_start_index + i] ^ masking_key[i % NUM_MASK_BYTES];
             unmasked_payload.push(byte); // 32 mask bits are used repeatedly
-            //payload.push(byte as char);
+                                         //payload.push(byte as char);
             payload.push(byte as char);
         }
 
@@ -115,7 +115,6 @@ fn format_raw_bytes(data: &Vec<u8>) -> String {
 +------+--------+--------+--------+--------+--------+--------+--------+--------+",
     );
     let mut qword_buf: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
-    
     let num_qwords = data.len().div_euclid(BITS_IN_BYTE as usize);
     // Append full qwords
     for i in 0..num_qwords {
@@ -128,7 +127,11 @@ fn format_raw_bytes(data: &Vec<u8>) -> String {
     let remaining_bytes = data.len().rem_euclid(BITS_IN_BYTE as usize);
     let from_byte_ix = num_qwords * BITS_IN_BYTE as usize;
     let to_byte_ix = from_byte_ix + remaining_bytes as usize;
-    result.push_str(&format_partial_qword(&data[from_byte_ix..to_byte_ix], num_qwords + 1, remaining_bytes));
+    result.push_str(&format_partial_qword(
+        &data[from_byte_ix..to_byte_ix],
+        num_qwords + 1,
+        remaining_bytes,
+    ));
     result
 }
 
@@ -207,7 +210,7 @@ fn format_partial_qword(data: &[u8], qword_ix: usize, num_bytes: usize) -> Strin
                 data[0], data[1], data[2], data[3], data[4], data[5], data[6], qword_ix
             )
         }
-        _ => { String::from("") }
+        _ => String::from(""),
     }
 }
 
@@ -256,47 +259,44 @@ fn format_short_frame(frame: &WebSocketFrame) -> String {
     );
 
     // Format remaining full dwords
-    let remaining_payload_dwords: u8 = (frame.payload_len-2).div_euclid(BYTES_IN_DWORD);
+    let remaining_payload_dwords: u8 = (frame.payload_len - 2).div_euclid(BYTES_IN_DWORD);
     for i in 0..remaining_payload_dwords {
         let from_byte_ix: usize = ((i * BYTES_IN_DWORD) + 2) as usize;
         let to_byte_ix: usize = from_byte_ix + BYTES_IN_DWORD as usize;
-        result.push_str(
-            &format_payload_data_dword(
-                &frame.masked_payload[from_byte_ix..to_byte_ix],
-                &frame.unmasked_payload[from_byte_ix..to_byte_ix],
-                &frame.payload[from_byte_ix..to_byte_ix],
-                BYTES_IN_DWORD,
-                i + 1,
-                i + 3
-            )
-        );
+        result.push_str(&format_payload_data_dword(
+            &frame.masked_payload[from_byte_ix..to_byte_ix],
+            &frame.unmasked_payload[from_byte_ix..to_byte_ix],
+            &frame.payload[from_byte_ix..to_byte_ix],
+            BYTES_IN_DWORD,
+            i + 1,
+            i + 3,
+        ));
     }
 
     // Format remaining bytes (formatted as partial dword)
     let remaining_bytes: u8 = (frame.payload_len - 2).rem_euclid(BYTES_IN_DWORD);
-    let from_byte_ix: usize = ((remaining_payload_dwords * BYTES_IN_DWORD) + 2) as usize;
-    let to_byte_ix: usize = from_byte_ix + remaining_bytes as usize;
-    result.push_str(
-        &format_payload_data_dword(
+    if remaining_bytes > 0 {
+        let from_byte_ix: usize = ((remaining_payload_dwords * BYTES_IN_DWORD) + 2) as usize;
+        let to_byte_ix: usize = from_byte_ix + remaining_bytes as usize;
+        result.push_str(&format_payload_data_dword(
             &frame.masked_payload[from_byte_ix..to_byte_ix],
             &frame.unmasked_payload[from_byte_ix..to_byte_ix],
             &frame.payload[from_byte_ix..to_byte_ix],
             remaining_bytes,
             (remaining_payload_dwords * 2) + 2,
-            remaining_payload_dwords + 3
-        )
-    );
-    
+            remaining_payload_dwords + 3,
+        ));
+    }
     result
 }
 
 fn format_payload_data_dword(
-    masked_bits: &[u8], 
-    unmasked_bits: &[u8], 
-    data: &[char], 
+    masked_bits: &[u8],
+    unmasked_bits: &[u8],
+    data: &[char],
     num_bytes: u8,
     from_part_number: u8,
-    dword_number: u8
+    dword_number: u8,
 ) -> String {
     match num_bytes {
         1 => {
@@ -306,53 +306,67 @@ fn format_payload_data_dword(
        |  {0:<2}   | {2:>5}     MSK |
        |       |{3}|
        |       | {4:>5} '{5}' UNM |
-       |       |Payload pt {6:<4}|
+       |       |{6:<15}|
        +-------+---------------+",
-                dword_number,         
+                dword_number,
                 byte_str(masked_bits[0], BITS_IN_BYTE),
                 format!("({})", masked_bits[0]),
-                byte_str(unmasked_bits[0], BITS_IN_BYTE), 
+                byte_str(unmasked_bits[0], BITS_IN_BYTE),
                 format!("({})", unmasked_bits[0]),
-                data[0], 
-                from_part_number,
+                data[0],
+                format!("Payload pt {}", from_part_number),
             )
         }
         2 => {
             format!(
                 "
        | DWORD |{1}|{2}|
-       |  {0:<2}   |             MASKED            |
-       |       |{3}|{4}|
-       |       |     '{5}'    UNMASKED   '{6}'     |
-       |       |    Payload Data (part {7:<3})     |
+       |  {0:<2}   | {3:>5}      MASKED  {4:>5}      |
+       |       |{5}|{6}|
+       |       | {7:>5} '{8}' UNMASKED {9:>5} '{10}'  |
+       |       |{11:^31}|
        +-------+-------------------------------+",
-                dword_number,         
-                byte_str(masked_bits[0], BITS_IN_BYTE), 
-                byte_str(masked_bits[1], BITS_IN_BYTE), 
-                byte_str(unmasked_bits[0], BITS_IN_BYTE), 
+                dword_number,
+                byte_str(masked_bits[0], BITS_IN_BYTE),
+                byte_str(masked_bits[1], BITS_IN_BYTE),
+                format!("({})", masked_bits[0]),
+                format!("({})", masked_bits[1]),
+                byte_str(unmasked_bits[0], BITS_IN_BYTE),
                 byte_str(unmasked_bits[1], BITS_IN_BYTE),
-                data[0], data[1],
-                from_part_number,
+                format!("({})", unmasked_bits[0]),
+                data[0],
+                format!("({})", unmasked_bits[1]),
+                data[1],
+                format!("Payload Data (part {})", from_part_number),
             )
         }
         3 => {
             format!(
                 "
        | DWORD |{1}|{2}|{3}|                
-       |  {0:<2}   |             MASKED            |             MASKED            |
-       |       |{4}|{5}|{6}|                
-       |       |     '{7}'    UNMASKED   '{8}'     |     '{9}'    UNMASKED           |
-       |       |    Payload Data (part {10:<3})    |    Payload Data (part {11:<3})    |
-       +-------+-------------------------------+-------------------------------+",
-                dword_number,         
-                byte_str(masked_bits[0], BITS_IN_BYTE), 
-                byte_str(masked_bits[1], BITS_IN_BYTE), 
-                byte_str(masked_bits[2], BITS_IN_BYTE), 
-                byte_str(unmasked_bits[0], BITS_IN_BYTE), 
-                byte_str(unmasked_bits[1], BITS_IN_BYTE), 
+       |  {0:<2}   | {4:>5}      MASKED  {5:>5}      | {6:>5}     MSK |
+       |       |{7}|{8}|{9}|                
+       |       | {10:>5} '{11}' UNMASKED {12:>5} '{13}'  | {14:>5} '{15}' UNM |
+       |       |{16:^31}|{17:^15}|
+       +-------+-------------------------------+---------------+",
+                dword_number,
+                byte_str(masked_bits[0], BITS_IN_BYTE),
+                byte_str(masked_bits[1], BITS_IN_BYTE),
+                byte_str(masked_bits[2], BITS_IN_BYTE),
+                format!("({})", masked_bits[0]),
+                format!("({})", masked_bits[1]),
+                format!("({})", masked_bits[2]),
+                byte_str(unmasked_bits[0], BITS_IN_BYTE),
+                byte_str(unmasked_bits[1], BITS_IN_BYTE),
                 byte_str(unmasked_bits[2], BITS_IN_BYTE),
-                data[0], data[1], data[2],
-                from_part_number, from_part_number + 1,
+                format!("({})", unmasked_bits[0]),
+                data[0],
+                format!("({})", unmasked_bits[1]),
+                data[1],
+                format!("({})", unmasked_bits[2]),
+                data[2],
+                format!("Payload Data (part {})", from_part_number),
+                format!("Payload pt {}", from_part_number + 1),
             )
         }
         4 => {
@@ -362,29 +376,33 @@ fn format_payload_data_dword(
        |  {0:<2}   |             MASKED            |             MASKED            |
        |       |{5}|{6}|{7}|{8}|
        |       |     '{9}'    UNMASKED   '{10}'     |     '{11}'    UNMASKED   '{12}'     |
-       |       |    Payload Data (part {13:<3})    |    Payload Data (part {14:<3})    |
+       |       |{13:^31}|{14:^31}|
        +-------+-------------------------------+-------------------------------+",
-                dword_number,         
-                byte_str(masked_bits[0], BITS_IN_BYTE), 
-                byte_str(masked_bits[1], BITS_IN_BYTE), 
-                byte_str(masked_bits[2], BITS_IN_BYTE), 
+                dword_number,
+                byte_str(masked_bits[0], BITS_IN_BYTE),
+                byte_str(masked_bits[1], BITS_IN_BYTE),
+                byte_str(masked_bits[2], BITS_IN_BYTE),
                 byte_str(masked_bits[3], BITS_IN_BYTE),
-                byte_str(unmasked_bits[0], BITS_IN_BYTE), 
-                byte_str(unmasked_bits[1], BITS_IN_BYTE), 
-                byte_str(unmasked_bits[2], BITS_IN_BYTE), 
+                byte_str(unmasked_bits[0], BITS_IN_BYTE),
+                byte_str(unmasked_bits[1], BITS_IN_BYTE),
+                byte_str(unmasked_bits[2], BITS_IN_BYTE),
                 byte_str(unmasked_bits[3], BITS_IN_BYTE),
-                data[0], data[1], data[2], data[3],
-                from_part_number, from_part_number + 1
+                data[0],
+                data[1],
+                data[2],
+                data[3],
+                format!("Payload Data (part {})", from_part_number),
+                format!("Payload Data (part {})", from_part_number + 1),
             )
         }
-        _ => { String::from("ERROR: Can only format between 1 and 4 bytes.") }
+        _ => String::from("ERROR: Can only format between 1 and 4 bytes."),
     }
 }
 
 /// Formats a byte or partial byte.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `byte` - The byte to format.
 /// * `num_bits` - The number of bits to format.
 fn byte_str<'a>(byte: u8, num_bits: u8) -> String {

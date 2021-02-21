@@ -3,6 +3,7 @@ extern crate base64;
 extern crate sha1;
 
 mod decoder;
+mod bitformat;
 
 use banner::{Banner, Color, HeaderLevel, Style};
 use decoder::decode_frame;

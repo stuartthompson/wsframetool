@@ -3,7 +3,6 @@ extern crate base64;
 extern crate sha1;
 
 mod decoder;
-mod websocket_frame;
 
 use banner::{Banner, Color, HeaderLevel, Style};
 use decoder::decode_frame;

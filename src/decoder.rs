@@ -1,12 +1,12 @@
-use libwdi::format_qword_table;
-use super::websocket_frame::WebSocketFrame;
+use bitformat::{QwordTable, WebSocketFrame};
 
 pub fn decode_frame(content: String) {
     // Decode base64 representation to bytes
     let bytes = base64::decode(content).unwrap();
 
     // Parse the websocket frame
-    let frame: WebSocketFrame = WebSocketFrame::from(&bytes);
+    let raw_byte_table: QwordTable = QwordTable::from_bytes(&bytes);
+    let frame: WebSocketFrame = WebSocketFrame::from_bytes(&bytes);
 
     println!(
         "
@@ -18,13 +18,9 @@ Packet length: {0}
 {2}
     ",
         frame.frame_len,
-        format_qword_table(&bytes),
-        frame.format_frame()
+        raw_byte_table.format(),
+        frame.format()
     );
-
-    // for i in 0..bytes.len() {
-    //     println!("Byte {0: >2} is {1: >3}: {1:0>8b}", i, bytes[i]);
-    // }
 }
 
 
@@ -32,5 +28,5 @@ Packet length: {0}
 
 #[cfg(test)]
 mod tests {
-    // gYS8KAcLyE10fw==
+    
 }

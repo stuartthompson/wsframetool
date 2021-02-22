@@ -1,5 +1,5 @@
 [package]
-name = "wdi"
+name = "wsdatainspector"
 version = "0.1.0"
 authors = ["Stuart Thompson <stuart@stuartthompson.net>"]
 edition = "2018"
@@ -10,11 +10,8 @@ edition = "2018"
 name = "wdi"
 path = "src/main.rs"
 
-[lib]
-name = "libwdi"
-path = "src/lib.rs"
-
 [dependencies]
 sha-1 = "0.8.2"
 base64 = "0.12.1"
 banner = "0.0.4"
+bitformat = "0.0.3"

@@ -17,7 +17,7 @@ version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc88e03c96946c02f01c9ccbe5d70ea50ac1f28e602d37163fe993526ced85e0"
 dependencies = [
- "colored",
+ "colored 1.9.3",
 ]
 
 [[package]]
@@ -28,11 +28,12 @@ checksum = "3441f0f7b02788e948e47f457ca01f1d7e6d92c693bc132c22b087d3141c03ff"
 
 [[package]]
 name = "bitformat"
-version = "0.0.3"
+version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83e2328765809e1f73265fe1ab06e9cccc0b922b6ac7501c4915e87af5e3e9f9"
+checksum = "7505e640a2dd61bdc9c316aa0131847b5bebdcdc42bf698a52d2223a07df3044"
 dependencies = [
  "base64",
+ "colored 2.0.0",
 ]
 
 [[package]]
@@ -73,6 +74,17 @@ name = "colored"
 version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f4ffc801dacf156c5854b9df4f425a626539c3a6ef7893cc0c5084a23f0b6c59"
+dependencies = [
+ "atty",
+ "lazy_static",
+ "winapi",
+]
+
+[[package]]
+name = "colored"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3616f750b84d8f0de8a58bda93e08e2a81ad3f523089b05f1dffecab48c6cbd"
 dependencies = [
  "atty",
  "lazy_static",

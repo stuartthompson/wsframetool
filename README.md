@@ -7,7 +7,9 @@ https://tools.ietf.org/html/rfc6455#section-5.2
 
 ## Example
 
+```
 cargo run -- -d gYSTDDDP52lDuw==
+```
 
 This will inspect a websocket data frame containing a text payload of 'test'
 

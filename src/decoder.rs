@@ -23,9 +23,6 @@ Packet length: {0}
     );
 }
 
-
-
-
 #[cfg(test)]
 mod tests {
     
